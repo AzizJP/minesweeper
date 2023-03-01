@@ -1,12 +1,15 @@
 import {FC, memo} from 'react';
 
+import Sprite from '../Sprite/Sprite';
+
 import './Header.scss';
 
 const Header: FC = memo(() => {
   return (
-    <div className="header">
-      <h1 className="header__title">Hello, World!</h1>
-    </div>
+    <header className="header">
+      <Sprite isButton={false} item="mine" />
+      <h1 className="header__title">Сапёр</h1>
+    </header>
   );
 });
 

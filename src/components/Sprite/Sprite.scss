@@ -1,0 +1,13 @@
+.srpite {
+  background: url(../../images/minesweeper-sprites.png);
+
+  &_button {
+    border: none;
+  }
+ 
+  &_mine {
+    width: 18px;
+    height: 18px;
+    background-position: -84px -50px;
+  }
+}

@@ -1,0 +1,13 @@
+.header {
+  display: flex;
+  align-self: center;
+  align-items: center;
+  gap: 20px;
+  width: 80%;
+
+  &__title {
+    font-weight: 700;
+    font-size: 2rem;
+    line-height: 2.4rem;
+  }
+}
