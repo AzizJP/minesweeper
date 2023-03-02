@@ -1,0 +1,22 @@
+.game {
+  &__field {
+    display: flex;
+    border-bottom: 2px solid rgb(250, 250, 250);
+    border-right: 2px solid rgb(250, 250, 250);
+    border-top: 2px solid rgb(120, 120, 120);
+    border-left: 2px solid rgb(120, 120, 120);
+
+    &_column {
+      display: flex;
+      flex-direction: column;
+    }
+  
+    &_cell {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 16px;
+      height: 16px;
+    }
+  }
+}

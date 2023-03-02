@@ -1,13 +1,160 @@
-.srpite {
+$numberWidth: 13px;
+$numberHeight: 23px;
+$fieldCellWidth: 16px;
+$fieldCellHeight: 16px;
+$emojiWidth: 26px;
+$emojiHeight: 26px;
+
+@mixin displaySize ($width, $height) {
+  width: $width;
+  height: $height;
+}
+
+.sprite {
   background: url(../../images/minesweeper-sprites.png);
 
-  &_button {
+  &__button {
+    padding: 0;
     border: none;
-  }
+    cursor: pointer;
+    @include displaySize($fieldCellWidth, $fieldCellHeight);
+    background-position-y: -51px;
+
+    &_closed {
+      background-position-x: 0;
+    }
+
+    &_empty {
+      background-position-x: -17px;
+    }
+
+    &_flag {
+      background-position-x: -34px;
+    }
+
+    &_question {
+      background-position-x: -51px;
+
+      &-clicked {
+        background-position-x: -68px;
+      }
+    }
  
-  &_mine {
-    width: 18px;
-    height: 18px;
-    background-position: -84px -50px;
+    &_mine {
+      background-position-x: -85px;
+
+      &-activated {
+        background-position-x: -102px
+      }
+
+      &-cleared {
+        background-position-x: -119px
+      }
+    }
+
+    &_one {
+      background-position: 0 -68px;
+    }
+
+    &_two {
+      background-position: -17px -68px;
+    }
+
+    &_three {
+      background-position: -34px -68px;
+    }
+
+    &_four {
+      background-position: -51px -68px;
+    }
+
+    &_five {
+      background-position: -68px -68px;
+    }
+
+    &_six {
+      background-position: -85px -68px;
+    }
+
+    &_seven {
+      background-position: -102px -68px;
+    }
+
+    &_eight {
+      background-position: -119px -68px;
+    }
+  }
+
+  &__number {
+    @include displaySize($numberWidth, $numberHeight);
+    background-position-y: 0; 
+
+    &_zero {
+      background-position-x: -126px;
+    }
+
+    &_one {
+      background-position-x: 0;
+    }
+
+    &_two {
+      background-position-x: -14px;
+    }
+
+    &_three {
+      background-position-x: -28px;
+    }
+
+    &_four {
+      background-position-x: -42px;
+    }
+
+    &_five {
+      background-position-x: -56px;
+    }
+
+    &_six {
+      background-position-x: -70px;
+    }
+
+    &_seven {
+      background-position-x: -84px;
+    }
+
+    &_eight {
+      background-position-x: -98px;
+    }
+
+    &_nine {
+      background-position-x: -112px;
+    }
+  }
+
+  &__emoji {
+    padding: 0;
+    border: none;
+    cursor: pointer;
+    @include displaySize($emojiWidth, $emojiHeight);
+    background-position-y: -24px; 
+
+    &_smile {
+      background-position-x: 0;
+
+      &-clicked {
+      background-position-x: -27px;
+      }
+    }
+
+    &_open-mouth {
+    background-position-x: -54px;
+    }
+
+    &_sunglasses {
+    background-position-x: -81px;
+    }
+
+    &_death {
+    background-position-x: -108px;
+    }
   }
 }

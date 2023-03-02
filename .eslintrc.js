@@ -90,7 +90,7 @@ module.exports = {
     ],
 
     'react-hooks/rules-of-hooks': 'error',
-    'react-hooks/exhaustive-deps': 'error',
+    'react-hooks/exhaustive-deps': 'warn',
 
     'react/jsx-boolean-value': [2],
     'react/jsx-curly-brace-presence': [2],
