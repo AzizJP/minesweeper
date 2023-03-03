@@ -1,6 +1,6 @@
 import {MouseEventHandler, FocusEventHandler} from 'react';
 
-export interface SpriteProps {
+export interface CellProps {
   type: string;
   item: string;
   handleClick?: MouseEventHandler<HTMLButtonElement>;

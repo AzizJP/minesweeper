@@ -1,12 +1,11 @@
 import {FC, memo, useCallback, useEffect, useState, useMemo} from 'react';
 
-import Sprite from '../../Sprite/Sprite';
-import {ITime, Numbers, SpriteTypes} from '../Main.types';
+import Cell from '../Cell/Cell';
 
 import {GameHeaderProps} from './GameHeader.props';
 
 import './GameHeader.scss';
-import {Emoji} from './GameHeader.types';
+import {Emoji, MineDisplay, Numbers, CellTypes, TimeDisplay} from './GameHeader.types';
 
 const GameHeader: FC<GameHeaderProps> = memo(
   ({
@@ -20,50 +19,50 @@ const GameHeader: FC<GameHeaderProps> = memo(
     isEmojiOnRetention,
     handleEmojiChange,
   }) => {
-    const [time, setTime] = useState<ITime>({
-      firsDisplay: 0,
+    const [time, setTime] = useState<TimeDisplay>({
+      firstDisplay: 0,
       secondDisplay: 0,
       thirdDisplay: 0,
     });
-    const [mines, setMines] = useState<ITime>({
-      firsDisplay: 0,
+    const [mines, setMines] = useState<MineDisplay>({
+      firstDisplay: 0,
       secondDisplay: 0,
       thirdDisplay: 0,
     });
 
-    const changeTimeUpToTenSec = useCallback((value: number, obj: ITime) => {
-      return setTime({...obj, firsDisplay: value});
-    }, []);
+    const changeTimeUpToTenSec = useCallback((value: number) => setTime(prev => ({...prev, firstDisplay: value})), []);
 
-    const changeMinesDisplayToTenPieces = useCallback((value: number, obj: ITime) => {
-      return setMines({...obj, firsDisplay: value});
-    }, []);
+    const changeMinesDisplayToTenPieces = useCallback(
+      (value: number) => setMines(prev => ({...prev, firstDisplay: value})),
+      [],
+    );
 
-    const changeTimeUpToHundredSec = useCallback((value: number, obj: ITime) => {
-      return setTime({...obj, firsDisplay: +value.toString()[1], secondDisplay: +value.toString()[0]});
-    }, []);
+    const changeTimeUpToHundredSec = useCallback(
+      (value: number) =>
+        setTime(prev => ({...prev, firstDisplay: +value.toString()[1], secondDisplay: +value.toString()[0]})),
+      [],
+    );
 
-    const changeMinesDisplayToHundredPieces = useCallback((value: number, obj: ITime) => {
-      return setMines({...obj, firsDisplay: +value.toString()[1], secondDisplay: +value.toString()[0]});
-    }, []);
+    const changeMinesDisplayToHundredPieces = useCallback(
+      (value: number) =>
+        setMines(prev => ({...prev, firstDisplay: +value.toString()[1], secondDisplay: +value.toString()[0]})),
+      [],
+    );
 
-    const changeTimeUpToThousandSec = useCallback((value: number, obj: ITime) => {
-      return setTime({
-        ...obj,
-        firsDisplay: +value.toString()[2],
-        secondDisplay: +value.toString()[1],
-        thirdDisplay: +value.toString()[0],
-      });
-    }, []);
+    const changeTimeUpToThousandSec = useCallback(
+      (value: number) =>
+        setTime({
+          firstDisplay: +value.toString()[2],
+          secondDisplay: +value.toString()[1],
+          thirdDisplay: +value.toString()[0],
+        }),
+      [],
+    );
 
-    const changeTimeUpToMax = useCallback((value: number, obj: ITime) => {
-      return setTime({
-        ...obj,
-        firsDisplay: value,
-        secondDisplay: value,
-        thirdDisplay: value,
-      });
-    }, []);
+    const changeTimeUpToMax = useCallback(
+      (value: number) => setTime({firstDisplay: value, secondDisplay: value, thirdDisplay: value}),
+      [],
+    );
 
     const onEmojiRetention = useCallback(() => {
       handleEmojiChange(true);
@@ -76,18 +75,16 @@ const GameHeader: FC<GameHeaderProps> = memo(
     const onEmojiClick = useCallback(() => {
       resetGame();
       setTime({
-        ...time,
-        firsDisplay: 0,
+        firstDisplay: 0,
         secondDisplay: 0,
         thirdDisplay: 0,
       });
       setMines({
-        ...mines,
-        firsDisplay: 0,
+        firstDisplay: 0,
         secondDisplay: 0,
         thirdDisplay: 0,
       });
-    }, [mines, resetGame, time]);
+    }, [resetGame]);
 
     const handleEmojiStatus = useMemo(() => {
       if (isGameLose) return Emoji.DEATH;
@@ -99,20 +96,20 @@ const GameHeader: FC<GameHeaderProps> = memo(
 
     useEffect(() => {
       if (numberOfMines < 10) {
-        changeMinesDisplayToTenPieces(numberOfMines, mines);
+        changeMinesDisplayToTenPieces(numberOfMines);
       } else if (numberOfMines >= 10 && numberOfMines < 100) {
-        changeMinesDisplayToHundredPieces(numberOfMines, mines);
+        changeMinesDisplayToHundredPieces(numberOfMines);
       }
 
       if (stopWatcher < 10) {
-        changeTimeUpToTenSec(stopWatcher, time);
+        changeTimeUpToTenSec(stopWatcher);
       } else if (stopWatcher >= 10 && stopWatcher < 100) {
-        changeTimeUpToHundredSec(stopWatcher, time);
+        changeTimeUpToHundredSec(stopWatcher);
       } else if (stopWatcher >= 100 && stopWatcher < 1000) {
-        changeTimeUpToThousandSec(stopWatcher, time);
+        changeTimeUpToThousandSec(stopWatcher);
       } else {
         clearInterval(intervalId);
-        changeTimeUpToMax(9, time);
+        changeTimeUpToMax(9);
       }
     }, [
       changeMinesDisplayToHundredPieces,
@@ -121,6 +118,7 @@ const GameHeader: FC<GameHeaderProps> = memo(
       changeTimeUpToMax,
       changeTimeUpToTenSec,
       changeTimeUpToThousandSec,
+      intervalId,
       numberOfMines,
       stopWatcher,
     ]);
@@ -128,13 +126,13 @@ const GameHeader: FC<GameHeaderProps> = memo(
     return (
       <div className="game__header">
         <div className="game__numbers">
-          <Sprite type={SpriteTypes.NUMBER} item={Numbers[mines.thirdDisplay].toLowerCase()} />
-          <Sprite type={SpriteTypes.NUMBER} item={Numbers[mines.secondDisplay].toLowerCase()} />
-          <Sprite type={SpriteTypes.NUMBER} item={Numbers[mines.firsDisplay].toLowerCase()} />
+          <Cell type={CellTypes.NUMBER} item={Numbers[mines.thirdDisplay].toLowerCase()} />
+          <Cell type={CellTypes.NUMBER} item={Numbers[mines.secondDisplay].toLowerCase()} />
+          <Cell type={CellTypes.NUMBER} item={Numbers[mines.firstDisplay].toLowerCase()} />
         </div>
         <div className="game__emoji">
-          <Sprite
-            type={SpriteTypes.EMOJI}
+          <Cell
+            type={CellTypes.EMOJI}
             item={handleEmojiStatus}
             handleClick={onEmojiClick}
             handleRetention={onEmojiRetention}
@@ -143,9 +141,9 @@ const GameHeader: FC<GameHeaderProps> = memo(
           />
         </div>
         <div className="game__numbers">
-          <Sprite type={SpriteTypes.NUMBER} item={Numbers[time.thirdDisplay].toLowerCase()} />
-          <Sprite type={SpriteTypes.NUMBER} item={Numbers[time.secondDisplay].toLowerCase()} />
-          <Sprite type={SpriteTypes.NUMBER} item={Numbers[time.firsDisplay].toLowerCase()} />
+          <Cell type={CellTypes.NUMBER} item={Numbers[time.thirdDisplay].toLowerCase()} />
+          <Cell type={CellTypes.NUMBER} item={Numbers[time.secondDisplay].toLowerCase()} />
+          <Cell type={CellTypes.NUMBER} item={Numbers[time.firstDisplay].toLowerCase()} />
         </div>
       </div>
     );

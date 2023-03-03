@@ -1,3 +1,5 @@
+import {SetStateAction} from 'react';
+
 export interface GameFieldProps {
   field: Array<number>;
   handleFieldChange(newField: Array<number>): void;
@@ -5,11 +7,11 @@ export interface GameFieldProps {
   handleMaskChange(newMask: Array<number>): void;
   isDisabled: boolean;
   handleDisableChange(isDis: boolean): void;
-  onStart(): void;
+  startStopWatch(): void;
   numberOfMines: number;
-  handleNumberOfMinesChange(newNumber: number): void;
+  handleNumberOfMinesChange(newNumber: SetStateAction<number>): void;
   intervalId: NodeJS.Timer;
-  isGameStart: boolean;
+  isGameStarted: boolean;
   handleGameLoseChange(value: boolean): void;
   handleMouseStatusChange(value: boolean): void;
 }

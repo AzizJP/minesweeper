@@ -1,10 +1,10 @@
 import {FC, memo} from 'react';
 
-import {SpriteProps} from './Sprite.props';
+import {CellProps} from './Cell.props';
 
-import './Sprite.scss';
+import './Cell.scss';
 
-const Sprite: FC<SpriteProps> = memo(
+const Cell: FC<CellProps> = memo(
   ({type, item, handleClick, handleRightClick, handleRetention, handleRelease, handleBlur, handleOut, isDisabled}) => {
     if (type === 'field-cell')
       return (
@@ -36,4 +36,4 @@ const Sprite: FC<SpriteProps> = memo(
   },
 );
 
-export default Sprite;
+export default Cell;

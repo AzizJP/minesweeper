@@ -1,8 +1,8 @@
 import {FC, memo, useCallback, MouseEvent, MouseEventHandler} from 'react';
 
-import Sprite from '../../Sprite/Sprite';
+import Cell from '../Cell/Cell';
 import {createField} from '../Game/Game.helpers';
-import {SpriteTypes} from '../Main.types';
+import {CellTypes} from '../GameHeader/GameHeader.types';
 
 import {CELLS, NUMBER_OF_MINES, SIZE} from './GameField.helpers';
 import {GameFieldProps} from './GameField.props';
@@ -18,17 +18,18 @@ const GameField: FC<GameFieldProps> = memo(
     handleMaskChange,
     isDisabled,
     handleDisableChange,
-    onStart,
+    startStopWatch,
     numberOfMines,
     handleNumberOfMinesChange,
     intervalId,
-    isGameStart,
+    isGameStarted,
     handleGameLoseChange,
     handleMouseStatusChange,
   }) => {
     const displayField = (x: number, y: number) => {
-      if (mask[y * SIZE + x] !== FieldCell['opened']) return FieldCell[mask[y * SIZE + x]].toLowerCase();
-      return FieldCell[field[y * SIZE + x]].toLowerCase();
+      const cellPosition = y * SIZE + x;
+      if (mask[cellPosition] !== FieldCell['opened']) return FieldCell[mask[cellPosition]].toLowerCase();
+      return FieldCell[field[cellPosition]].toLowerCase();
     };
 
     const handleRetention = useCallback(() => {
@@ -39,118 +40,150 @@ const GameField: FC<GameFieldProps> = memo(
       handleMouseStatusChange(false);
     }, [handleMouseStatusChange]);
 
-    const handleCellClick = useCallback(
-      (x: number, y: number): MouseEventHandler<HTMLButtonElement> => {
+    const handleLoss = useCallback(
+      (newField: Array<number>) => {
         const newMask = [...mask];
 
-        if (newMask[y * SIZE + x] === FieldCell['opened']) return;
+        handleDisableChange(true);
+        clearInterval(intervalId);
+        handleGameLoseChange(true);
+        let mines = 0;
 
-        const emptyCells: Array<[number, number]> = [];
+        newField.forEach((cell, idx) => {
+          if (newMask[idx] === FieldCell['question']) {
+            newMask[idx] = FieldCell['question-clicked'];
+          }
 
-        const newField = isGameStart ? [...field] : createField(SIZE, NUMBER_OF_MINES, x, y);
-
-        onStart();
-
-        if (!isGameStart) {
-          let mines = numberOfMines;
-
-          newField.forEach(cell => {
-            if (cell === FieldCell['mine-activated']) {
+          if (cell === FieldCell['mine-activated']) {
+            if (newMask[idx] === FieldCell['flag']) {
+              newMask[idx] = FieldCell['mine-cleared'];
+            } else {
+              newMask[idx] = FieldCell['mine'];
               mines++;
               handleNumberOfMinesChange(mines);
             }
-          });
-        }
-
-        if (newField[y * SIZE + x] === FieldCell['mine-activated']) {
-          handleDisableChange(true);
-          clearInterval(intervalId);
-          handleGameLoseChange(true);
-          let mines = 0;
-
-          newField.forEach((cell, idx) => {
-            if (newMask[idx] === FieldCell['question']) {
-              newMask[idx] = FieldCell['question-clicked'];
-            }
-
-            if (cell === FieldCell['mine-activated']) {
-              if (newMask[idx] === FieldCell['flag']) {
-                newMask[idx] = FieldCell['mine-cleared'];
-              } else {
-                newMask[idx] = FieldCell['mine'];
-                mines++;
-                handleNumberOfMinesChange(mines);
-              }
-            }
-          });
-        }
-
-        const addClickedCell = (cellByX: number, cellByY: number) => {
-          if (cellByX >= 0 && cellByX < SIZE && cellByY >= 0 && cellByY < SIZE) {
-            if (newMask[cellByY * SIZE + cellByX] === FieldCell['opened']) return;
-            emptyCells.push([cellByX, cellByY]);
           }
-        };
-
-        addClickedCell(x, y);
-
-        while (emptyCells.length) {
-          const [a, b] = emptyCells.pop();
-
-          newMask[b * SIZE + a] = FieldCell['opened'];
-
-          if (newField[b * SIZE + a] !== 0) continue;
-
-          addClickedCell(a + 1, b);
-          addClickedCell(a - 1, b);
-          addClickedCell(a, b + 1);
-          addClickedCell(a, b - 1);
-        }
+        });
 
         handleMaskChange(newMask);
         handleFieldChange(newField);
-        return;
       },
       [
-        field,
         handleDisableChange,
         handleFieldChange,
         handleGameLoseChange,
         handleMaskChange,
         handleNumberOfMinesChange,
         intervalId,
-        isGameStart,
         mask,
-        numberOfMines,
-        onStart,
+      ],
+    );
+
+    const handleCellClick = useCallback(
+      (x: number, y: number): MouseEventHandler<HTMLButtonElement> => {
+        const newMask = [...mask];
+        const cellPosition = y * SIZE + x;
+
+        const cellAlreadyOpen = newMask[cellPosition] === FieldCell['opened'];
+        if (cellAlreadyOpen) return;
+
+        let newField: Array<number>;
+
+        if (isGameStarted) {
+          newField = [...field];
+        } else {
+          newField = createField(SIZE, NUMBER_OF_MINES, x, y);
+          startStopWatch();
+
+          newField.forEach(cell => {
+            if (cell === FieldCell['mine-activated']) {
+              handleNumberOfMinesChange(prev => prev + 1);
+            }
+          });
+        }
+
+        const isMineActivated = newField[cellPosition] === FieldCell['mine-activated'];
+        if (isMineActivated) {
+          handleLoss(newField);
+          return;
+        }
+
+        const cells: Array<[number, number]> = [];
+
+        const addClickedCell = (cellByX: number, cellByY: number) => {
+          const coordInsideField = cellByX >= 0 && cellByX < SIZE && cellByY >= 0 && cellByY < SIZE;
+          const cellIsOpened = newMask[cellByY * SIZE + cellByX] === FieldCell['opened'];
+
+          if (coordInsideField) {
+            if (cellIsOpened) return;
+            cells.push([cellByX, cellByY]);
+          }
+        };
+
+        addClickedCell(x, y);
+
+        while (cells.length) {
+          const [a, b] = cells.pop();
+          const curentCellPosition = b * SIZE + a;
+
+          newMask[curentCellPosition] = FieldCell['opened'];
+
+          const ifEmptyCell = newField[curentCellPosition] === 0;
+          if (ifEmptyCell) {
+            addClickedCell(a + 1, b);
+            addClickedCell(a - 1, b);
+            addClickedCell(a, b + 1);
+            addClickedCell(a, b - 1);
+          }
+        }
+
+        handleMaskChange(newMask);
+        handleFieldChange(newField);
+      },
+      [
+        field,
+        handleFieldChange,
+        handleLoss,
+        handleMaskChange,
+        handleNumberOfMinesChange,
+        isGameStarted,
+        mask,
+        startStopWatch,
       ],
     );
 
     const handleRightClick = useCallback(
-      (evt: MouseEvent<HTMLButtonElement>, x: number, y: number): MouseEventHandler<HTMLButtonElement> => {
+      (evt: MouseEvent<HTMLButtonElement>, x: number, y: number) => {
         evt.preventDefault();
+        evt.stopPropagation();
 
-        if (!isGameStart) return;
+        if (!isGameStarted || isDisabled) return;
 
         const newMask = [...mask];
+        const cellPosition = y * SIZE + x;
 
-        if (isDisabled) return;
+        const cellIsOpened = newMask[cellPosition] === FieldCell['opened'];
+        if (cellIsOpened) return;
 
-        if (newMask[y * SIZE + x] === FieldCell['opened']) return;
+        const cellIsClosed = newMask[cellPosition] === FieldCell['closed'];
+        const cellIsFlag = newMask[cellPosition] === FieldCell['flag'];
+        const cellIsQuestion = newMask[cellPosition] === FieldCell['question'];
 
-        if (newMask[y * SIZE + x] === FieldCell['closed']) {
-          newMask[y * SIZE + x] = FieldCell['flag'];
+        if (cellIsClosed) {
+          const flagAmount = newMask.filter(cell => cell === FieldCell['flag']).length;
+          if (flagAmount === NUMBER_OF_MINES) return;
+          newMask[cellPosition] = FieldCell['flag'];
           handleNumberOfMinesChange(numberOfMines - 1);
-        } else if (newMask[y * SIZE + x] === FieldCell['flag']) {
-          newMask[y * SIZE + x] = FieldCell['question'];
+        } else if (cellIsFlag) {
+          newMask[cellPosition] = FieldCell['question'];
           handleNumberOfMinesChange(numberOfMines + 1);
-        } else if (newMask[y * SIZE + x] === FieldCell['question']) {
-          newMask[y * SIZE + x] = FieldCell['closed'];
+        } else if (cellIsQuestion) {
+          newMask[cellPosition] = FieldCell['closed'];
         }
 
         handleMaskChange(newMask);
       },
-      [handleMaskChange, handleNumberOfMinesChange, isDisabled, isGameStart, mask, numberOfMines],
+      [handleMaskChange, handleNumberOfMinesChange, isDisabled, isGameStarted, mask, numberOfMines],
     );
 
     return (
@@ -160,9 +193,9 @@ const GameField: FC<GameFieldProps> = memo(
             <div className="game__field_column" key={y}>
               {CELLS.map((b, x) => {
                 return (
-                  <Sprite
+                  <Cell
                     key={x}
-                    type={SpriteTypes.FIELD_CELL}
+                    type={CellTypes.FIELD_CELL}
                     item={displayField(x, y)}
                     handleClick={() => handleCellClick(x, y)}
                     handleRightClick={evt => handleRightClick(evt, x, y)}
