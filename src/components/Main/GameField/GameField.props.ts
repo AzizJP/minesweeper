@@ -1,5 +1,6 @@
 export interface GameFieldProps {
   field: Array<number>;
+  handleFieldChange(newField: Array<number>): void;
   mask: Array<number>;
   handleMaskChange(newMask: Array<number>): void;
   isDisabled: boolean;
@@ -8,4 +9,5 @@ export interface GameFieldProps {
   numberOfMines: number;
   handleNumberOfMinesChange(newNumber: number): void;
   intervalId: NodeJS.Timer;
+  isGameStart: boolean;
 }

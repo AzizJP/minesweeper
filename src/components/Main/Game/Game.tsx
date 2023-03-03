@@ -1,21 +1,24 @@
 import {FC, memo, useState, useCallback} from 'react';
 
 import GameField from '../GameField/GameField';
-import {NUMBER_OF_MINES, SIZE} from '../GameField/GameField.helpers';
+import {SIZE} from '../GameField/GameField.helpers';
 import {FieldCell} from '../GameField/GameField.types';
 import GameHeader from '../GameHeader/GameHeader';
-
-import {createField} from './Game.helpers';
 
 import './Game.scss';
 
 const Game: FC = memo(() => {
   const [stopWatcher, setStopWAtcher] = useState(0);
-  const [numberOfMines, setNumberOfMines] = useState(40);
+  const [numberOfMines, setNumberOfMines] = useState(0);
   const [intervalId, setIntervalId] = useState<NodeJS.Timer>();
-  const [field, setField] = useState<Array<number>>(createField(SIZE, NUMBER_OF_MINES));
+  const [field, setField] = useState<Array<number>>(() => new Array(SIZE * SIZE).fill(0));
   const [mask, setMask] = useState<Array<number>>(() => new Array(SIZE * SIZE).fill(FieldCell['closed']));
   const [isDisabled, setIsDisabled] = useState(false);
+  const [isGameStart, setIsGameStart] = useState(false);
+
+  const handleFieldChange = useCallback((newField: Array<number>) => {
+    setField(newField);
+  }, []);
 
   const handleMaskChange = useCallback((newMask: Array<number>) => {
     setMask(newMask);
@@ -37,6 +40,7 @@ const Game: FC = memo(() => {
 
   const onStart = useCallback(() => {
     if (stopWatcher !== 0) return;
+    setIsGameStart(true);
     activateStopWatcher();
     const id = setInterval(activateStopWatcher, 1000);
     setIntervalId(id);
@@ -45,13 +49,14 @@ const Game: FC = memo(() => {
   const resetGame = useCallback(() => {
     const newMask = new Array(SIZE * SIZE).fill(FieldCell['closed']);
 
+    setIsGameStart(false);
     clearInterval(intervalId);
     setStopWAtcher(0);
-    setNumberOfMines(40);
-    setField(createField(SIZE, NUMBER_OF_MINES));
+    setNumberOfMines(0);
+    handleFieldChange(new Array(SIZE * SIZE).fill(0));
     handleMaskChange(newMask);
     handleDisableChange(false);
-  }, [handleDisableChange, handleMaskChange, intervalId]);
+  }, [handleDisableChange, handleFieldChange, handleMaskChange, intervalId]);
 
   return (
     <div className="game">
@@ -63,6 +68,7 @@ const Game: FC = memo(() => {
       />
       <GameField
         field={field}
+        handleFieldChange={handleFieldChange}
         mask={mask}
         handleMaskChange={handleMaskChange}
         isDisabled={isDisabled}
@@ -71,6 +77,7 @@ const Game: FC = memo(() => {
         numberOfMines={numberOfMines}
         handleNumberOfMinesChange={handleNumberOfMinesChange}
         intervalId={intervalId}
+        isGameStart={isGameStart}
       />
     </div>
   );

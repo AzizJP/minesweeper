@@ -1,6 +1,6 @@
 export const MINE = -1;
 
-export const createField = (size: number, numberOfMines: number) => {
+export const createField = (size: number, numberOfMines: number, clickedX: number, clickedY: number) => {
   const field: Array<number> = new Array(size * size).fill(0);
 
   const countMinesNearby = (x: number, y: number) => {
@@ -11,9 +11,11 @@ export const createField = (size: number, numberOfMines: number) => {
     }
   };
 
-  for (let i = 0; i < numberOfMines; i++) {
+  for (let i = 0; i < numberOfMines; ) {
     const x = Math.floor(Math.random() * size);
     const y = Math.floor(Math.random() * size);
+
+    if (clickedX === x && clickedY === y) continue;
 
     if (field[y * size + x] === MINE) continue;
     field[y * size + x] = MINE;
@@ -26,6 +28,8 @@ export const createField = (size: number, numberOfMines: number) => {
     countMinesNearby(x + 1, y - 1);
     countMinesNearby(x - 1, y + 1);
     countMinesNearby(x - 1, y - 1);
+
+    i++;
   }
 
   return field;

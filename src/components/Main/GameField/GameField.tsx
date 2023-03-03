@@ -1,9 +1,10 @@
 import {FC, memo, useCallback, MouseEvent, MouseEventHandler} from 'react';
 
 import Sprite from '../../Sprite/Sprite';
+import {createField} from '../Game/Game.helpers';
 import {SpriteTypes} from '../Main.types';
 
-import {CELLS, SIZE} from './GameField.helpers';
+import {CELLS, NUMBER_OF_MINES, SIZE} from './GameField.helpers';
 import {GameFieldProps} from './GameField.props';
 import {FieldCell} from './GameField.types';
 
@@ -12,6 +13,7 @@ import './GameField.scss';
 const GameField: FC<GameFieldProps> = memo(
   ({
     field,
+    handleFieldChange,
     mask,
     handleMaskChange,
     isDisabled,
@@ -20,73 +22,109 @@ const GameField: FC<GameFieldProps> = memo(
     numberOfMines,
     handleNumberOfMinesChange,
     intervalId,
+    isGameStart,
   }) => {
     const displayField = (x: number, y: number) => {
-      if (mask[y * SIZE + x] !== FieldCell['transparent']) return FieldCell[mask[y * SIZE + x]].toLowerCase();
+      if (mask[y * SIZE + x] !== FieldCell['opened']) return FieldCell[mask[y * SIZE + x]].toLowerCase();
       return FieldCell[field[y * SIZE + x]].toLowerCase();
     };
 
     const handleCellClick = useCallback(
       (x: number, y: number): MouseEventHandler<HTMLButtonElement> => {
         const newMask = [...mask];
+
+        if (newMask[y * SIZE + x] === FieldCell['opened']) return;
+
         const emptyCells: Array<[number, number]> = [];
+
+        const newField = isGameStart ? [...field] : createField(SIZE, NUMBER_OF_MINES, x, y);
+
         onStart();
 
-        if (newMask[y * SIZE + x] === FieldCell['transparent']) return;
+        if (!isGameStart) {
+          let mines = numberOfMines;
 
-        if (field[y * SIZE + x] === FieldCell['mine-activated']) {
+          newField.forEach(cell => {
+            if (cell === FieldCell['mine-activated']) {
+              mines++;
+              handleNumberOfMinesChange(mines);
+            }
+          });
+        }
+
+        if (newField[y * SIZE + x] === FieldCell['mine-activated']) {
           handleDisableChange(true);
           clearInterval(intervalId);
+          let mines = 0;
 
-          field.forEach((cell, idx) => {
+          newField.forEach((cell, idx) => {
             if (newMask[idx] === FieldCell['question']) {
               newMask[idx] = FieldCell['question-clicked'];
             }
+
             if (cell === FieldCell['mine-activated']) {
               if (newMask[idx] === FieldCell['flag']) {
                 newMask[idx] = FieldCell['mine-cleared'];
               } else {
                 newMask[idx] = FieldCell['mine'];
+                mines++;
+                handleNumberOfMinesChange(mines);
               }
             }
           });
         }
 
-        const openEmptyCells = (cellByX: number, cellByY: number) => {
+        const addClickedCell = (cellByX: number, cellByY: number) => {
           if (cellByX >= 0 && cellByX < SIZE && cellByY >= 0 && cellByY < SIZE) {
-            if (newMask[cellByY * SIZE + cellByX] === FieldCell['transparent']) return;
+            if (newMask[cellByY * SIZE + cellByX] === FieldCell['opened']) return;
             emptyCells.push([cellByX, cellByY]);
           }
         };
 
-        openEmptyCells(x, y);
+        addClickedCell(x, y);
 
         while (emptyCells.length) {
           const [a, b] = emptyCells.pop();
 
-          newMask[b * SIZE + a] = FieldCell['transparent'];
+          newMask[b * SIZE + a] = FieldCell['opened'];
 
-          if (field[b * SIZE + a] !== 0) continue;
+          if (newField[b * SIZE + a] !== 0) continue;
 
-          openEmptyCells(a + 1, b);
-          openEmptyCells(a - 1, b);
-          openEmptyCells(a, b + 1);
-          openEmptyCells(a, b - 1);
+          addClickedCell(a + 1, b);
+          addClickedCell(a - 1, b);
+          addClickedCell(a, b + 1);
+          addClickedCell(a, b - 1);
         }
+
         handleMaskChange(newMask);
+        handleFieldChange(newField);
+        return;
       },
-      [field, handleDisableChange, handleMaskChange, intervalId, mask, onStart],
+      [
+        field,
+        handleDisableChange,
+        handleFieldChange,
+        handleMaskChange,
+        handleNumberOfMinesChange,
+        intervalId,
+        isGameStart,
+        mask,
+        numberOfMines,
+        onStart,
+      ],
     );
 
     const handleRightClick = useCallback(
       (evt: MouseEvent<HTMLButtonElement>, x: number, y: number): MouseEventHandler<HTMLButtonElement> => {
         evt.preventDefault();
 
+        if (!isGameStart) return;
+
         const newMask = [...mask];
 
         if (isDisabled) return;
 
-        if (newMask[y * SIZE + x] === FieldCell['transparent']) return;
+        if (newMask[y * SIZE + x] === FieldCell['opened']) return;
 
         if (newMask[y * SIZE + x] === FieldCell['closed']) {
           newMask[y * SIZE + x] = FieldCell['flag'];
@@ -100,7 +138,7 @@ const GameField: FC<GameFieldProps> = memo(
 
         handleMaskChange(newMask);
       },
-      [handleMaskChange, handleNumberOfMinesChange, isDisabled, mask, numberOfMines],
+      [handleMaskChange, handleNumberOfMinesChange, isDisabled, isGameStart, mask, numberOfMines],
     );
 
     return (

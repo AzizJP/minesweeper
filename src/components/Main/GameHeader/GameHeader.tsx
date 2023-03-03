@@ -53,6 +53,22 @@ const GameHeader: FC<GameHeaderProps> = memo(({numberOfMines, intervalId, stopWa
     });
   }, []);
 
+  const onEmojiClick = useCallback(() => {
+    resetGame();
+    setTime({
+      ...time,
+      firsDisplay: 0,
+      secondDisplay: 0,
+      thirdDisplay: 0,
+    });
+    setMines({
+      ...mines,
+      firsDisplay: 0,
+      secondDisplay: 0,
+      thirdDisplay: 0,
+    });
+  }, [mines, resetGame, time]);
+
   useEffect(() => {
     if (numberOfMines < 10) {
       changeMinesDisplayToTenPieces(numberOfMines, mines);
@@ -89,7 +105,7 @@ const GameHeader: FC<GameHeaderProps> = memo(({numberOfMines, intervalId, stopWa
         <Sprite type={SpriteTypes.NUMBER} item={Numbers[mines.firsDisplay].toLowerCase()} />
       </div>
       <div className="game__emoji">
-        <Sprite type={SpriteTypes.EMOJI} item="smile" handleClick={resetGame} />
+        <Sprite type={SpriteTypes.EMOJI} item="smile" handleClick={onEmojiClick} />
       </div>
       <div className="game__numbers">
         <Sprite type={SpriteTypes.NUMBER} item={Numbers[time.thirdDisplay].toLowerCase()} />

@@ -15,5 +15,5 @@ export enum FieldCell {
   'question-clicked',
   'mine',
   'mine-cleared',
-  'transparent',
+  'opened',
 }
