@@ -23,11 +23,21 @@ const GameField: FC<GameFieldProps> = memo(
     handleNumberOfMinesChange,
     intervalId,
     isGameStart,
+    handleGameLoseChange,
+    handleMouseStatusChange,
   }) => {
     const displayField = (x: number, y: number) => {
       if (mask[y * SIZE + x] !== FieldCell['opened']) return FieldCell[mask[y * SIZE + x]].toLowerCase();
       return FieldCell[field[y * SIZE + x]].toLowerCase();
     };
+
+    const handleRetention = useCallback(() => {
+      handleMouseStatusChange(true);
+    }, [handleMouseStatusChange]);
+
+    const handleRelease = useCallback(() => {
+      handleMouseStatusChange(false);
+    }, [handleMouseStatusChange]);
 
     const handleCellClick = useCallback(
       (x: number, y: number): MouseEventHandler<HTMLButtonElement> => {
@@ -55,6 +65,7 @@ const GameField: FC<GameFieldProps> = memo(
         if (newField[y * SIZE + x] === FieldCell['mine-activated']) {
           handleDisableChange(true);
           clearInterval(intervalId);
+          handleGameLoseChange(true);
           let mines = 0;
 
           newField.forEach((cell, idx) => {
@@ -104,6 +115,7 @@ const GameField: FC<GameFieldProps> = memo(
         field,
         handleDisableChange,
         handleFieldChange,
+        handleGameLoseChange,
         handleMaskChange,
         handleNumberOfMinesChange,
         intervalId,
@@ -154,6 +166,9 @@ const GameField: FC<GameFieldProps> = memo(
                     item={displayField(x, y)}
                     handleClick={() => handleCellClick(x, y)}
                     handleRightClick={evt => handleRightClick(evt, x, y)}
+                    handleRetention={handleRetention}
+                    handleRelease={handleRelease}
+                    handleOut={handleRelease}
                     isDisabled={isDisabled}
                   />
                 );

@@ -10,4 +10,6 @@ export interface GameFieldProps {
   handleNumberOfMinesChange(newNumber: number): void;
   intervalId: NodeJS.Timer;
   isGameStart: boolean;
+  handleGameLoseChange(value: boolean): void;
+  handleMouseStatusChange(value: boolean): void;
 }
