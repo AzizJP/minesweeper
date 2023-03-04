@@ -109,7 +109,6 @@ const Game: FC = memo(() => {
         isDisabled={isDisabled}
         handleDisableChange={handleDisableChange}
         startStopWatch={startStopWatch}
-        numberOfMines={numberOfMines}
         handleNumberOfMinesChange={handleNumberOfMinesChange}
         intervalId={intervalId}
         isGameStarted={isGameStarted}

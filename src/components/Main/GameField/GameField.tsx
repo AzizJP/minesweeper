@@ -19,7 +19,6 @@ const GameField: FC<GameFieldProps> = memo(
     isDisabled,
     handleDisableChange,
     startStopWatch,
-    numberOfMines,
     handleNumberOfMinesChange,
     intervalId,
     isGameStarted,
@@ -50,45 +49,6 @@ const GameField: FC<GameFieldProps> = memo(
       handleMouseStatusChange(false);
     }, [handleMouseStatusChange]);
 
-    const handleLoss = useCallback(
-      (newField: Array<number>) => {
-        const newMask = [...mask];
-
-        handleDisableChange(true);
-        clearInterval(intervalId);
-        handleGameLoseChange(true);
-        let mines = 0;
-
-        newField.forEach((cell, idx) => {
-          if (newMask[idx] === FieldCell['question']) {
-            newMask[idx] = FieldCell['question-clicked'];
-          }
-
-          if (cell === FieldCell['mine-activated']) {
-            if (newMask[idx] === FieldCell['flag']) {
-              newMask[idx] = FieldCell['mine-cleared'];
-            } else {
-              newMask[idx] = FieldCell['mine'];
-              mines++;
-              handleNumberOfMinesChange(mines);
-            }
-          }
-        });
-
-        handleMaskChange(newMask);
-        handleFieldChange(newField);
-      },
-      [
-        handleDisableChange,
-        handleFieldChange,
-        handleGameLoseChange,
-        handleMaskChange,
-        handleNumberOfMinesChange,
-        intervalId,
-        mask,
-      ],
-    );
-
     const handleCellClick = useCallback(
       (x: number, y: number): MouseEventHandler<HTMLButtonElement> => {
         const newMask = [...mask];
@@ -96,6 +56,9 @@ const GameField: FC<GameFieldProps> = memo(
 
         const cellAlreadyOpen = newMask[cellPosition] === FieldCell['opened'];
         if (cellAlreadyOpen) return;
+
+        const cellIsFlag = newMask[cellPosition] === FieldCell['flag'];
+        if (cellIsFlag) return;
 
         let newField: Array<number>;
 
@@ -106,15 +69,52 @@ const GameField: FC<GameFieldProps> = memo(
           startStopWatch();
 
           newField.forEach(cell => {
-            if (cell === FieldCell['mine-activated']) {
+            const cellIsMine = cell === FieldCell['mine-activated'];
+            if (cellIsMine) {
               handleNumberOfMinesChange(prev => prev + 1);
             }
           });
         }
 
+        const handleLoss = () => {
+          handleDisableChange(true);
+          clearInterval(intervalId);
+          handleGameLoseChange(true);
+          let mines = 0;
+
+          newField.forEach((cell, idx) => {
+            const currentCellIsQuestion = newMask[idx] === FieldCell['question'];
+            if (currentCellIsQuestion) {
+              newMask[idx] = FieldCell['question-clicked'];
+            }
+
+            const currentCellIsMine = cell === FieldCell['mine-activated'];
+            const currentCellIsFlag = newMask[idx] === FieldCell['flag'];
+            const indexMatchesClickedCell = idx === cellPosition;
+            if (currentCellIsMine) {
+              if (currentCellIsFlag && !indexMatchesClickedCell) {
+                newMask[idx] = FieldCell['mine-cleared'];
+              } else if (indexMatchesClickedCell) {
+                newMask[idx] = FieldCell['opened'];
+              } else {
+                newMask[idx] = FieldCell['mine'];
+              }
+            }
+
+            const mineFinded = newMask[idx] === FieldCell['mine-cleared'];
+            if (mineFinded) {
+              mines++;
+            }
+          });
+
+          handleNumberOfMinesChange(NUMBER_OF_MINES - mines);
+          handleMaskChange(newMask);
+          handleFieldChange(newField);
+        };
+
         const isMineActivated = newField[cellPosition] === FieldCell['mine-activated'];
         if (isMineActivated) {
-          handleLoss(newField);
+          handleLoss();
           return;
         }
 
@@ -152,10 +152,12 @@ const GameField: FC<GameFieldProps> = memo(
       },
       [
         field,
+        handleDisableChange,
         handleFieldChange,
-        handleLoss,
+        handleGameLoseChange,
         handleMaskChange,
         handleNumberOfMinesChange,
+        intervalId,
         isGameStarted,
         mask,
         startStopWatch,
@@ -181,19 +183,22 @@ const GameField: FC<GameFieldProps> = memo(
 
         if (cellIsClosed) {
           const flagAmount = newMask.filter(cell => cell === FieldCell['flag']).length;
-          if (flagAmount === NUMBER_OF_MINES) return;
-          newMask[cellPosition] = FieldCell['flag'];
-          handleNumberOfMinesChange(numberOfMines - 1);
+          if (flagAmount >= NUMBER_OF_MINES) {
+            newMask[cellPosition] = FieldCell['question'];
+          } else {
+            newMask[cellPosition] = FieldCell['flag'];
+            handleNumberOfMinesChange(prev => prev - 1);
+          }
         } else if (cellIsFlag) {
           newMask[cellPosition] = FieldCell['question'];
-          handleNumberOfMinesChange(numberOfMines + 1);
+          handleNumberOfMinesChange(prev => prev + 1);
         } else if (cellIsQuestion) {
           newMask[cellPosition] = FieldCell['closed'];
         }
 
         handleMaskChange(newMask);
       },
-      [handleMaskChange, handleNumberOfMinesChange, isDisabled, isGameStarted, mask, numberOfMines],
+      [handleMaskChange, handleNumberOfMinesChange, isDisabled, isGameStarted, mask],
     );
 
     return (

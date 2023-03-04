@@ -8,7 +8,6 @@ export interface GameFieldProps {
   isDisabled: boolean;
   handleDisableChange(isDis: boolean): void;
   startStopWatch(): void;
-  numberOfMines: number;
   handleNumberOfMinesChange(newNumber: SetStateAction<number>): void;
   intervalId: NodeJS.Timer;
   isGameStarted: boolean;
