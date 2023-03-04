@@ -2,7 +2,8 @@
   "name": "minesweeper",
   "version": "1.0.0",
   "description": "",
-  "homepage": "https://azizjp.github.io/minesweeper",
+  "homepage": "https://azizjp.github.io/minesweeper/",
+  "main": "index.tsx",
   "scripts": {
     "build": "rm -rf dist && webpack --mode production",
     "dev": "webpack serve",
