@@ -32,9 +32,19 @@ const GameField: FC<GameFieldProps> = memo(
       return FieldCell[field[cellPosition]].toLowerCase();
     };
 
-    const handleRetention = useCallback(() => {
-      handleMouseStatusChange(true);
-    }, [handleMouseStatusChange]);
+    const handleRetention = useCallback(
+      (evt: MouseEvent<HTMLButtonElement>, x: number, y: number) => {
+        const newMask = [...mask];
+
+        if (evt.button === 0) {
+          const cellIsNotOpened = newMask[y * SIZE + x] !== FieldCell['opened'];
+          if (cellIsNotOpened) {
+            handleMouseStatusChange(true);
+          }
+        }
+      },
+      [handleMouseStatusChange, mask],
+    );
 
     const handleRelease = useCallback(() => {
       handleMouseStatusChange(false);
@@ -199,7 +209,7 @@ const GameField: FC<GameFieldProps> = memo(
                     item={displayField(x, y)}
                     handleClick={() => handleCellClick(x, y)}
                     handleRightClick={evt => handleRightClick(evt, x, y)}
-                    handleRetention={handleRetention}
+                    handleRetention={evt => handleRetention(evt, x, y)}
                     handleRelease={handleRelease}
                     handleOut={handleRelease}
                     isDisabled={isDisabled}

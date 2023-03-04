@@ -5,15 +5,16 @@ import {NUMBER_OF_MINES, SIZE} from '../GameField/GameField.helpers';
 import {GameFieldProps} from '../GameField/GameField.props';
 import {FieldCell} from '../GameField/GameField.types';
 import GameHeader from '../GameHeader/GameHeader';
+import {GameHeaderProps} from '../GameHeader/GameHeader.props';
 
 import './Game.scss';
 
 const Game: FC = memo(() => {
   const [stopWatcher, setStopWatcher] = useState(0);
   const [numberOfMines, setNumberOfMines] = useState(0);
-  const [intervalId, setIntervalId] = useState<NodeJS.Timer>();
-  const [field, setField] = useState<Array<number>>(new Array(SIZE * SIZE).fill(0));
-  const [mask, setMask] = useState<Array<number>>(new Array(SIZE * SIZE).fill(FieldCell['closed']));
+  const [intervalId, setIntervalId] = useState<GameFieldProps['intervalId']>();
+  const [field, setField] = useState<GameFieldProps['field']>(new Array(SIZE * SIZE).fill(0));
+  const [mask, setMask] = useState<GameFieldProps['mask']>(new Array(SIZE * SIZE).fill(FieldCell['closed']));
   const [isDisabled, setIsDisabled] = useState(false);
   const [isGameStarted, setIsGameStarted] = useState(false);
   const [isGameLose, setIsGameLose] = useState(false);
@@ -21,15 +22,15 @@ const Game: FC = memo(() => {
   const [isMouseOnRetention, setIsMouseOnRetention] = useState(false);
   const [isEmojiOnRetention, setIsEmojiOnRetention] = useState(false);
 
-  const handleFieldChange = useCallback((newField: Array<number>) => {
+  const handleFieldChange = useCallback<GameFieldProps['handleFieldChange']>(newField => {
     setField(newField);
   }, []);
 
-  const handleMaskChange = useCallback((newMask: Array<number>) => {
+  const handleMaskChange = useCallback<GameFieldProps['handleMaskChange']>(newMask => {
     setMask(newMask);
   }, []);
 
-  const handleDisableChange = useCallback((isDis: boolean) => {
+  const handleDisableChange = useCallback<GameFieldProps['handleDisableChange']>(isDis => {
     setIsDisabled(isDis);
   }, []);
 
@@ -37,19 +38,15 @@ const Game: FC = memo(() => {
     setNumberOfMines(newNumber);
   }, []);
 
-  const handleGameLoseChange = useCallback((value: boolean) => {
+  const handleGameLoseChange = useCallback<GameFieldProps['handleGameLoseChange']>(value => {
     setIsGameLose(value);
   }, []);
 
-  const handleGameWinChange = useCallback((value: boolean) => {
-    setIsGameWin(value);
-  }, []);
-
-  const handleMouseStatusChange = useCallback((value: boolean) => {
+  const handleMouseStatusChange = useCallback<GameFieldProps['handleMouseStatusChange']>(value => {
     setIsMouseOnRetention(value);
   }, []);
 
-  const handleEmojiChange = useCallback((value: boolean) => {
+  const handleEmojiChange = useCallback<GameHeaderProps['handleEmojiChange']>(value => {
     setIsEmojiOnRetention(value);
   }, []);
 
@@ -64,14 +61,14 @@ const Game: FC = memo(() => {
 
     setIsGameStarted(false);
     handleGameLoseChange(false);
-    handleGameWinChange(false);
+    setIsGameWin(false);
     clearInterval(intervalId);
     setStopWatcher(0);
     setNumberOfMines(0);
     handleFieldChange(new Array(SIZE * SIZE).fill(0));
     handleMaskChange(newMask);
     handleDisableChange(false);
-  }, [handleDisableChange, handleFieldChange, handleGameLoseChange, handleGameWinChange, handleMaskChange, intervalId]);
+  }, [handleDisableChange, handleFieldChange, handleGameLoseChange, setIsGameWin, handleMaskChange, intervalId]);
 
   useEffect(() => {
     let numberOfClosedCell = 0;
@@ -85,9 +82,9 @@ const Game: FC = memo(() => {
     if (numberOfClosedCell === NUMBER_OF_MINES) {
       handleDisableChange(true);
       clearInterval(intervalId);
-      handleGameWinChange(true);
+      setIsGameWin(true);
     }
-  }, [handleDisableChange, handleGameWinChange, intervalId, mask]);
+  }, [handleDisableChange, setIsGameWin, intervalId, mask]);
 
   return (
     <div className="game">
