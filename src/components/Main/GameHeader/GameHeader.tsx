@@ -1,4 +1,4 @@
-import {FC, memo, useCallback, useEffect, useState, useMemo} from 'react';
+import {FC, memo, useCallback, useEffect, useState, useMemo, MouseEvent} from 'react';
 
 import Cell from '../Cell/Cell';
 
@@ -64,9 +64,12 @@ const GameHeader: FC<GameHeaderProps> = memo(
       [],
     );
 
-    const onEmojiRetention = useCallback(() => {
-      handleEmojiChange(true);
-    }, [handleEmojiChange]);
+    const onEmojiRetention = useCallback(
+      (evt: MouseEvent<HTMLButtonElement>) => {
+        if (evt.button === 0) handleEmojiChange(true);
+      },
+      [handleEmojiChange],
+    );
 
     const onEmojiRelease = useCallback(() => {
       handleEmojiChange(false);

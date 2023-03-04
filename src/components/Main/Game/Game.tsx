@@ -57,18 +57,20 @@ const Game: FC = memo(() => {
   }, []);
 
   const resetGame = useCallback(() => {
-    const newMask = new Array(SIZE * SIZE).fill(FieldCell['closed']);
+    if (isGameStarted) {
+      const newMask = new Array(SIZE * SIZE).fill(FieldCell['closed']);
 
-    setIsGameStarted(false);
-    handleGameLoseChange(false);
-    setIsGameWin(false);
-    clearInterval(intervalId);
-    setStopWatcher(0);
-    setNumberOfMines(0);
-    handleFieldChange(new Array(SIZE * SIZE).fill(0));
-    handleMaskChange(newMask);
-    handleDisableChange(false);
-  }, [handleDisableChange, handleFieldChange, handleGameLoseChange, setIsGameWin, handleMaskChange, intervalId]);
+      setIsGameStarted(false);
+      handleGameLoseChange(false);
+      setIsGameWin(false);
+      clearInterval(intervalId);
+      setStopWatcher(0);
+      setNumberOfMines(0);
+      handleFieldChange(new Array(SIZE * SIZE).fill(0));
+      handleMaskChange(newMask);
+      handleDisableChange(false);
+    }
+  }, [isGameStarted, handleGameLoseChange, intervalId, handleFieldChange, handleMaskChange, handleDisableChange]);
 
   useEffect(() => {
     let numberOfClosedCell = 0;

@@ -10,7 +10,7 @@ const Cell: FC<CellProps> = memo(
       return (
         <button
           type="button"
-          className={`sprite sprite__button sprite__button_${item}`}
+          className={`cell cell__button cell__button_${item}`}
           onClick={handleClick}
           onContextMenu={handleRightClick}
           onMouseDown={handleRetention}
@@ -20,12 +20,12 @@ const Cell: FC<CellProps> = memo(
           disabled={isDisabled}
         />
       );
-    if (type === 'number') return <div className={`sprite sprite__number sprite__number_${item}`} />;
+    if (type === 'number') return <div className={`cell cell__number cell__number_${item}`} />;
     if (type === 'emoji')
       return (
         <button
           type="button"
-          className={`sprite sprite__emoji sprite__emoji_${item}`}
+          className={`cell cell__emoji cell__emoji_${item}`}
           onClick={handleClick}
           onMouseDown={handleRetention}
           onBlur={handleBlur}
