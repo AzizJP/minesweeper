@@ -2,10 +2,13 @@
   "name": "minesweeper",
   "version": "1.0.0",
   "description": "",
+  "homepage": "https://azizjp.github.io/minesweeper",
   "scripts": {
     "build": "rm -rf dist && webpack --mode production",
     "dev": "webpack serve",
-    "lint": "npx eslint ."
+    "lint": "npx eslint .",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist"
   },
   "author": "azizjp",
   "license": "ISC",
